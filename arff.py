@@ -56,9 +56,9 @@ for org in ORGANISMS:
     ppi_values = {gene: [] for gene in gene_list}
     for gene in gene_list:
         for p in prot_list:
-            if p in ppis[gene].keys():
+            try:
                 ppi_values[gene].append(ppis[gene][p])
-            else:
+            except KeyError:
                 ppi_values[gene].append('0')
     print '\tFinished in %s seconds.' % int(time() - start)
 
