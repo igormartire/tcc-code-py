@@ -7,7 +7,7 @@ CATEGORIES = ['bp', 'cc', 'mf']
 CATEGORIES_SUBSETS = list(chain(*map(lambda i: combinations(CATEGORIES, i),
                                      range(1, len(CATEGORIES) + 1))))
 GO_THRESHOLD = PPI_THRESHOLD = 3
-SCORE_THRESHOLD = 500
+SCORE_THRESHOLD = 0.500
 
 OUTPUT_DIR = 'output_binary_score'
 if not os.path.exists(OUTPUT_DIR):
@@ -42,11 +42,11 @@ for org in ORGANISMS:
     ppi_values = {gene: [] for gene in gene_list}
     for gene in gene_list:
         for p in prot_list:
-            if p in ppis[gene].keys():
-                score = int(ppis[gene][p])
+            try:
+                score = float(ppis[gene][p])
                 ppi_values[gene].append('1' if score >= SCORE_THRESHOLD
                                         else '0')
-            else:
+            except KeyError:
                 ppi_values[gene].append('0')
 
     for cats in CATEGORIES_SUBSETS:
