@@ -73,7 +73,7 @@ for org in ORGANISMS:
         go_list = [str(row[0]) for row in q]
 
         gos = {gene: [] for gene in gene_list}
-        q = c.execute("SELECT gene_id, go_id "
+        q = c.execute("SELECT DISTINCT gene_id, go_id "
                       "FROM gene_go WHERE org = ?", (org,))
         for row in q:
             gos[row[0]].append(row[1])
@@ -83,7 +83,7 @@ for org in ORGANISMS:
             for go in go_list:
                 go_values[gene].append('1' if go in gos[gene] else '0')
 
-        file_name = 'output/' + org + '-' + '+'.join(cats) + '.arff'
+        file_name = OUTPUT_DIR + '/' + org + '-' + '+'.join(cats) + '.arff'
         print '\tCreating ARFF file: %s.' % file_name
         with open(file_name, 'w') as f:
             f.write('@relation GO_PPI_CE\n')
