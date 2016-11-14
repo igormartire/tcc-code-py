@@ -63,15 +63,9 @@ for org in ORGANISMS:
     for gene in gene_list:
         for p in prot_list:
             try:
-                v = ppis[gene][p]
-                ppi_values[gene].append(v)
-                sample = np.random.choice([0, 1], NUM_SAMPLES, p=[1-v, v])
-                for i in range(NUM_SAMPLES):
-                    ppi_values_sample[i][gene].append(sample[i])
+                ppi_values[gene].append(ppis[gene][p])
             except KeyError:
                 ppi_values[gene].append(0)
-                for i in range(NUM_SAMPLES):
-                    ppi_values_sample[i][gene].append(0)
     print '\tFinished in %s seconds.' % int(time() - start)
 
     for cats in CATEGORIES_SUBSETS:
@@ -130,8 +124,10 @@ for org in ORGANISMS:
         start = time()
         predicted = []
         for i in range(NUM_SAMPLES):
-            data = np.array([go_values[gene] + ppi_values_sample[i][gene] for gene in gene_list])
-            pred = cross_val_predict(clf, data, target, cv=5)
+            sample = np.random.rand(*data.shape)
+            sample[sample >= (1-data)] = 1
+            sample[sample < (1-data)] = 0
+            pred = cross_val_predict(clf, sample, target, cv=5)
             print '\t%s' % pred[:10]
             predicted.append(pred)
         m = stats.mode(np.array(predicted))
