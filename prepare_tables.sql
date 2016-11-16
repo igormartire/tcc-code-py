@@ -64,6 +64,7 @@ CREATE TABLE gene_prot_ce AS
   WHERE protein1 IN (
     SELECT gene_id
     FROM gene_class
+    WHERE org = 'ce'
   );
 
 CREATE TABLE gene_prot_dm AS
@@ -72,6 +73,7 @@ CREATE TABLE gene_prot_dm AS
   WHERE protein1 IN (
     SELECT gene_id
     FROM gene_class
+    WHERE org = 'dm'
   );
 
 CREATE TABLE gene_prot_mm AS
@@ -80,6 +82,7 @@ CREATE TABLE gene_prot_mm AS
   WHERE protein1 IN (
     SELECT gene_id
     FROM gene_class
+    WHERE org = 'mm'
   );
 
 CREATE TABLE gene_prot_sc AS
@@ -88,4 +91,5 @@ CREATE TABLE gene_prot_sc AS
   WHERE protein1 IN (
     SELECT gene_id
     FROM gene_class
+    WHERE org = 'sc'
   );
