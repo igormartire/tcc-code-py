@@ -22,7 +22,8 @@ NUM_PROCESSES = 11
 K_FOLD = 10
 
 METRICS_FILE_HEADER = [
-    'Organism', 'Categories', 'GO Threshold', 'PPI Threshold', 'Score Type',
+    'Organism', 'BP', 'CC', 'MF',
+    'GO Threshold', 'PPI Threshold', 'Score Type',
     'Classifier',
     'Accuracy', '(TPR*TNR)^1/2',
     'Precision A', 'Recall A', 'F1-score A', 'Support A',
@@ -95,7 +96,9 @@ def main(metrics_file):
             dataset_name = org + '-' + '+'.join(cats)
             print dataset_name
 
-            dataset_attrs = [org, '+'.join(cats), GO_THRESHOLD, PPI_THRESHOLD]
+            dataset_attrs = ([org]
+                             + map(int, [cat in cats for cat in CATEGORIES])
+                             + [GO_THRESHOLD, PPI_THRESHOLD])
 
             print 'SVC'
             clf = SVC(kernel='linear', C=1)
@@ -117,7 +120,27 @@ def main(metrics_file):
             pred = cross_val_predict(clf, data_binary, target, cv=K_FOLD)
             writeMetrics(metrics_file, target, pred, attr_list)
 
-            print 'KNN'
+            print 'KNN 1'
+            clf = KNeighborsClassifier(n_neighbors=1, n_jobs=-1)
+            attr_list = dataset_attrs + ['real', 'KNN 1']
+            pred = cross_val_predict(clf, data, target, cv=K_FOLD)
+            writeMetrics(metrics_file, target, pred, attr_list)
+
+            attr_list = dataset_attrs + ['bin', 'KNN 1']
+            pred = cross_val_predict(clf, data_binary, target, cv=K_FOLD)
+            writeMetrics(metrics_file, target, pred, attr_list)
+
+            print 'KNN 3'
+            clf = KNeighborsClassifier(n_neighbors=3, n_jobs=-1)
+            attr_list = dataset_attrs + ['real', 'KNN 3']
+            pred = cross_val_predict(clf, data, target, cv=K_FOLD)
+            writeMetrics(metrics_file, target, pred, attr_list)
+
+            attr_list = dataset_attrs + ['bin', 'KNN 3']
+            pred = cross_val_predict(clf, data_binary, target, cv=K_FOLD)
+            writeMetrics(metrics_file, target, pred, attr_list)
+
+            print 'KNN 5'
             clf = KNeighborsClassifier(n_neighbors=5, n_jobs=-1)
             attr_list = dataset_attrs + ['real', 'KNN 5']
             pred = cross_val_predict(clf, data, target, cv=K_FOLD)
@@ -131,12 +154,11 @@ def main(metrics_file):
             attr_list = dataset_attrs + ['real',
                                          'Ensemble S=%d SVC linear C=1'
                                          % NUM_SAMPLES]
-            pool = Pool(NUM_PROCESSES)
-            predictions = pool.map(predictstar,
+            predictions = POOL.map(predictstar,
                                    ((data, target)
                                     for i in xrange(NUM_SAMPLES)))
             pred = stats.mode(np.array(predictions))[0][0]
-            writeMetrics(metrics_file, target, pred, dataset_attrs)
+            writeMetrics(metrics_file, target, pred, attr_list)
 
 
 def writeMetrics(f, target, prediction, attr_list):
@@ -181,8 +203,9 @@ def predict(data, target):
     return prediction
 
 if __name__ == '__main__':
+    POOL = Pool(NUM_PROCESSES)
     with open('metrics_output.csv', 'w') as f:
         f.write(','.join(METRICS_FILE_HEADER) + '\n')
-        # for GO_THRESHOLD in [3, 10, 50]:
-        #     for PPI_THRESHOLD in [3, 10, 50]:
-        main(f)
+        for GO_THRESHOLD in [3, 10, 50]:
+            for PPI_THRESHOLD in [3, 10, 50]:
+                main(f)
